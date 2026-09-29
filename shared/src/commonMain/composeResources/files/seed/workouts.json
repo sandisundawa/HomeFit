@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "note": "Four immutable prescriptions are progressed across four weeks by the seed importer.",
+  "workouts": [
+    {"id":"full_body_v1","name":"Full Body Foundation","category":"FULL_BODY","exerciseIds":["ex_001","ex_003","ex_011","ex_008","ex_016","ex_021","ex_006","ex_038","ex_040"]},
+    {"id":"lower_body_v1","name":"Lower Body Foundation","category":"LOWER_BODY","exerciseIds":["ex_001","ex_004","ex_012","ex_016","ex_015","ex_018","ex_031","ex_037","ex_040"]},
+    {"id":"upper_core_v1","name":"Upper Body + Core","category":"UPPER_BODY","exerciseIds":["ex_001","ex_002","ex_008","ex_021","ex_022","ex_027","ex_023","ex_039","ex_040"]},
+    {"id":"conditioning_v1","name":"Low Impact Conditioning","category":"CARDIO","exerciseIds":["ex_001","ex_005","ex_007","ex_028","ex_006","ex_029","ex_032","ex_038","ex_040"]}
+  ]
+}

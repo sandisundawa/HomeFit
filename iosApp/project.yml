@@ -1,0 +1,16 @@
+name: HomeFit
+options:
+  bundleIdPrefix: com.homefit
+targets:
+  HomeFit:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    sources: [HomeFit]
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.homefit.ios
+      FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../shared/build/bin/iosSimulatorArm64/debugFramework"
+      OTHER_LDFLAGS: "-framework Shared"
+    preBuildScripts:
+      - name: Build shared framework
+        script: cd "$SRCROOT/.." && ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64

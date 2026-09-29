@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "programs": [{
+    "id": "program_beginner_weight_loss_28_v1",
+    "name": "28-Day Beginner Program",
+    "goal": "WEIGHT_LOSS",
+    "fitnessLevel": "BEGINNER",
+    "durationDays": 28,
+    "variants": [{
+      "workoutsPerWeek": 4,
+      "weeks": [
+        {"week":1,"workoutIds":["full_body_v1","lower_body_v1","upper_core_v1","conditioning_v1"]},
+        {"week":2,"workoutIds":["full_body_v1","lower_body_v1","upper_core_v1","conditioning_v1"]},
+        {"week":3,"workoutIds":["full_body_v1","lower_body_v1","upper_core_v1","conditioning_v1"]},
+        {"week":4,"workoutIds":["full_body_v1","lower_body_v1","upper_core_v1","conditioning_v1"]}
+      ]
+    }]
+  }]
+}
