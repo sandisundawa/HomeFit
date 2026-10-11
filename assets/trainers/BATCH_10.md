@@ -1,0 +1,39 @@
+# Trainer batch 10: Knee Push-Up, Reverse Lunge, Static Split Squat
+
+Created with the built-in image-generation tool. The image-generation skill guided matching the existing trainer, separate four-pose sheets and a targeted Reverse Lunge refinement. No API fallback, API key, stock-media purchase or new subscription was used.
+
+## Deliverables
+
+| Exercise | Source artwork | Runtime drawable | Poses | Loop |
+| --- | --- | --- | --- | --- |
+| Knee Push-Up | `knee-push-up-trainer-source.png` | `trainer_knee_push_up.png` | 4 | 4 seconds |
+| Reverse Lunge | `reverse-lunge-trainer-source.png` | `trainer_reverse_lunge.png` | 4 | 4.8 seconds |
+| Static Split Squat | `static-split-squat-trainer-source.png` | `trainer_static_split_squat.png` | 4 | 4 seconds |
+
+Master PNGs are beside this document. Runtime PNGs live in `shared/src/commonMain/composeResources/drawable/`, mechanically resized to 1200 × 1200 using `sips`. All are 2 × 2 sheets with second-row floor-baseline alignment. Playback uses 0, 0, 1, 2, 3, 3, 2, 1, reversing descent frames for ascent and holding endpoints.
+
+Reverse Lunge begins standing and steps backward; Static Split Squat begins and remains in a split stance. Both demonstrate one side with reminders to switch. Knee Push-Up uses palm support and grounded knees. Animation remains presentation-only; no workout timer, repetition counting, MVI or persistence changes.
+
+## Review limitations
+
+A targeted Reverse Lunge edit attempted to pin the front shoe. The selected edit still has noticeable horizontal front-foot drift and needs further refinement before release. Its second-row crop deliberately starts below the first row's shoes to prevent neighboring-frame bleed, leaving some vertical baseline drift. Static Split Squat has smaller shoe-position drift, and Knee Push-Up has minor hand-position variation. Floor-baseline alignment does not fix horizontal drift. These are illustrated trainer previews, not validated technique instruction; qualified movement review is still needed. Automated tests establish rendering and sequence behavior, not anatomical correctness.
+
+Coverage is 28 of 40 catalog exercises, with all four workout routines still fully covered. No physical-device installation or iOS test was performed for this batch.
+
+## Generation prompts
+
+### knee_push_up
+
+Use case: stylized-concept. HomeFit workout sprite atlas. Reference ONLY character/style, not squat poses or layout. Same tan adult male, short dark hair, moss fitted shirt, charcoal shorts, white socks, cream/lime sneakers, stylized 3D illustration with natural anatomy. NEW square sheet with EXACTLY 2 columns x 2 rows, four equal square cells, four distinct descent poses read left-right top-bottom. Same camera, scale, proportions and clothing in each cell. Complete person including fingers/shoes inside each cell with 8% margins. Opaque warm cream #F6F5F0 background, soft shadow, no labels/arrows/gridlines/ghost limbs. Code reverses these four poses for ascent. KNEE PUSH-UP, fixed side view facing RIGHT, slight elevated angle to distinguish two hands. Thin moss mat. Palms flat below/slightly wider than shoulders, fingers forward, knees supported on mat. Head-shoulders-hips-knees remain one straight diagonal line throughout; no sag or bent-at-hips tabletop. Four poses: 1 arms straight but soft; 2 elbows bend about 25 degrees; 3 elbows bend about 50 degrees; 4 controlled lower chest hovering above mat with elbows near 90 degrees, tucked diagonally back rather than flared sideways. Hands and knees pinned to exact same mat coordinates in all frames. Body lowers as one unit pivoting around knees, neutral neck eyes at mat. Feet relaxed behind knees, knees never leave mat. No forearm plank, no lying flat, no extra limbs. Mat baseline y=82% in each cell.
+
+### reverse_lunge
+
+Use case: stylized-concept. HomeFit workout sprite atlas. Reference ONLY character/style, not squat poses or layout. Same tan adult male, short dark hair, moss fitted shirt, charcoal shorts, white socks, cream/lime sneakers, stylized 3D illustration with natural anatomy. NEW square sheet with EXACTLY 2 columns x 2 rows, four equal square cells, four distinct descent poses read left-right top-bottom. Same camera, scale, proportions and clothing in each cell. Complete person including fingers/shoes inside each cell with 8% margins. Opaque warm cream #F6F5F0 background, soft shadow, no labels/arrows/gridlines/ghost limbs. Code reverses these four poses for ascent. BODYWEIGHT REVERSE LUNGE, fixed side three-quarter view facing RIGHT. Hands stay on hips, torso tall with small natural forward inclination, both legs visible. LEFT front foot stays flat at identical position on image RIGHT in all frames. RIGHT leg steps backward toward image LEFT. Four distinct poses: 1 standing feet hip-width together; 2 right foot stepping a comfortable stride BACK with rear heel up and toes touching, front knee almost straight; 3 both knees bending halfway, rear toes anchored; 4 controlled lowered lunge with front knee around 90 degrees and rear knee hovering above ground, hips between feet. Front heel stays down, knees track their toes; no foot crossing, no forward lunge, no kneeling contact, no exaggerated stride. Code reverses to bring rear foot forward to standing, caption switches sides. Same floor baseline y=88% each cell.
+
+### static_split_squat
+
+Use case: stylized-concept. HomeFit workout sprite atlas. Reference ONLY character/style, not squat poses or layout. Same tan adult male, short dark hair, moss fitted shirt, charcoal shorts, white socks, cream/lime sneakers, stylized 3D illustration with natural anatomy. NEW square sheet with EXACTLY 2 columns x 2 rows, four equal square cells, four distinct descent poses read left-right top-bottom. Same camera, scale, proportions and clothing in each cell. Complete person including fingers/shoes inside each cell with 8% margins. Opaque warm cream #F6F5F0 background, soft shadow, no labels/arrows/gridlines/ghost limbs. Code reverses these four poses for ascent. STATIC SPLIT SQUAT, fixed side three-quarter camera facing RIGHT. Distinguish from reverse lunge: BOTH FEET remain at exactly the SAME split-stance coordinates in ALL FOUR frames, never come together. LEFT foot forward at image RIGHT flat, RIGHT foot behind at image LEFT on ball of foot with heel up, hip-width separation visible. Hands stay on hips. Four poses: 1 tall split stance legs almost straight; 2 bend both knees shallowly and lower hips straight down; 3 lower halfway; 4 comfortable bottom with front knee about 90 degrees and rear knee hovering above floor. Torso tall, slight natural forward inclination, hips centered between feet; front heel flat, rear toes grounded. No forward stepping, no rear knee touching, no deep back arch, no narrow tightrope feet. Same floor baseline y=88%. Code reverses for rising while preserving split stance; caption says switch sides.
+
+## Selected Reverse Lunge refinement prompt
+
+Refine this exact reverse-lunge 2x2 sprite sheet. Preserve trainer identity, outfit, cream opaque background, four poses, size, side-three-quarter camera. Correct front-foot drift: in EVERY square cell pin the FRONT LEFT shoe to the EXACT SAME position: heel x=65%, toe x=82%, sole y=88%. Do NOT center each body independently. Pose1 standing body over this front shoe, rear shoe beside it. Pose2 right leg steps BACK toward image left, rear toes at x=28%, front shoe stays fixed. Pose3 halfway lowering, rear toes remain x=28%, front shoe still fixed. Pose4 lower lunge, rear knee hovering and front knee bent comfortably, same fixed shoe anchors as pose3. Shift body and adjust leg geometry to respect these anchors, not the shoes to fit the body. Keep head/hands/shoes within each cell, no text or arrows, same 2x2 four distinct poses. Never step front foot forward.

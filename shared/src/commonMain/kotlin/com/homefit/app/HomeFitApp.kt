@@ -119,7 +119,25 @@ fun HomeFitApp(viewModel: HomeFitViewModel) {
         bottomBar = {
             NavigationBar(containerColor = Color.White) {
                 listOf(AppRoute.HOME to "Today", AppRoute.LIBRARY to "Workouts", AppRoute.PROGRESS to "Progress", AppRoute.PROFILE to "Profile").forEach { (route, label) ->
-                    NavigationBarItem(route == state.selectedTab, { dispatch(AppIntent.SelectTab(route)) }, icon = { Text(if (route == state.selectedTab) "●" else "○") }, label = { Text(label) })
+                    NavigationBarItem(
+                        selected = route == state.selectedTab,
+                        onClick = { dispatch(AppIntent.SelectTab(route)) },
+                        icon = {
+                            Icon(
+                                imageVector = NavigationIcons.forRoute(route),
+                                contentDescription = null, // The visible tab label supplies accessibility text.
+                                modifier = Modifier.size(24.dp),
+                            )
+                        },
+                        label = { Text(label) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Ink,
+                            selectedTextColor = Ink,
+                            indicatorColor = Lime,
+                            unselectedIconColor = Moss,
+                            unselectedTextColor = Moss,
+                        ),
+                    )
                 }
             }
         }
@@ -197,7 +215,13 @@ fun HomeFitApp(viewModel: HomeFitViewModel) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("✕", Modifier.clickable { dispatch(AppIntent.ExitPlayer) }, fontSize = 22.sp); Text("${player.exerciseIndex + 1} / ${player.workout.exercises.size}", fontWeight = FontWeight.Bold); Text("Pause", Modifier.clickable { dispatch(AppIntent.PausePlayer) }, color = Moss, fontWeight = FontWeight.Bold) }
         Spacer(Modifier.height(24.dp)); LinearProgressIndicator(progress = { (player.exerciseIndex + 1f) / player.workout.exercises.size }, Modifier.fillMaxWidth(), color = Moss, trackColor = Mist)
         Spacer(Modifier.weight(.6f))
-        Box(Modifier.size(230.dp).background(if (player.phase == PlayerPhase.REST) Lime else Mist, CircleShape), contentAlignment = Alignment.Center) { Text(if (player.phase == PlayerPhase.REST) "REST" else item.exercise.name.take(2).uppercase(), fontSize = 46.sp, fontWeight = FontWeight.Black, color = Ink) }
+        if (player.phase == PlayerPhase.REST) {
+            Box(Modifier.size(230.dp).background(Lime, CircleShape), contentAlignment = Alignment.Center) {
+                Text("REST", fontSize = 46.sp, fontWeight = FontWeight.Black, color = Ink)
+            }
+        } else {
+            ExerciseAnimation(item.exercise, playing = player.phase == PlayerPhase.EXERCISE, modifier = Modifier.size(230.dp))
+        }
         Spacer(Modifier.height(28.dp)); Text(when (player.phase) { PlayerPhase.GET_READY -> "GET READY"; PlayerPhase.REST -> "BREATHE & RESET"; else -> item.section.name.replace('_', ' ') }, color = Moss, fontWeight = FontWeight.Bold)
         Text(if (player.phase == PlayerPhase.REST) "Rest" else item.exercise.name, fontSize = 32.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
         Text(if (player.phase == PlayerPhase.REST) "${player.remainingSeconds} sec" else item.reps?.let { "$it reps" } ?: "${player.remainingSeconds} sec", fontSize = 24.sp, color = Clay, fontWeight = FontWeight.Black)
