@@ -8,6 +8,7 @@ targets:
     deploymentTarget: "15.0"
     sources: [HomeFit]
     settings:
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       PRODUCT_BUNDLE_IDENTIFIER: com.homefit.ios
       FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../shared/build/bin/iosSimulatorArm64/debugFramework"
       OTHER_LDFLAGS: "-framework Shared"

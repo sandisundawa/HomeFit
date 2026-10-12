@@ -103,7 +103,7 @@ fun WorkoutDetailScreen(workout: Workout?, dispatch: (AppIntent) -> Unit, onStar
 @Composable
 fun ExerciseDetailScreen(exercise: Exercise?, dispatch: (AppIntent) -> Unit) = DetailFrame(exercise?.name ?: "Exercise", exercise?.category?.name?.replace('_', ' ') ?: "Movement guide", dispatch) {
     if (exercise == null) return@DetailFrame
-    Box(Modifier.fillMaxWidth().height(230.dp).background(Mist, RoundedCornerShape(28.dp)), contentAlignment = Alignment.Center) { Text(exercise.name.take(2).uppercase(), fontSize = 58.sp, fontWeight = FontWeight.Black, color = Moss) }
+    ExerciseDemo(exercise)
     Text(exercise.cue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
     Text("How to do it", fontSize = 20.sp, fontWeight = FontWeight.Black)
     exercise.instructions.forEachIndexed { i, text -> Text("${i + 1}. $text", lineHeight = 22.sp) }
