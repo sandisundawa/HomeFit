@@ -18,6 +18,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -26,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import com.homefit.core.data.SeedCatalog
 import com.homefit.core.model.*
 import com.homefit.feature.app.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 @Composable
 fun HomeFitApp(viewModel: HomeFitViewModel) {
@@ -72,13 +75,13 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
 @Composable private fun Welcome(onStart: () -> Unit) = Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Box(Modifier.size(48.dp).background(Accent, RoundedCornerShape(16.dp)), contentAlignment = Alignment.Center) {
-            Icon(NavigationIcons.Workouts, contentDescription = null, tint = TextPrimary)
+            Icon(NavigationIcons.Workouts, contentDescription = null, tint = Color.White)
         }
         Text("homefit", fontSize = 24.sp, fontWeight = FontWeight.Bold)
     }
-    Box(Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(32.dp)).background(SurfaceMuted), contentAlignment = Alignment.Center) {
-        Box(Modifier.size(128.dp).background(AccentSoft, CircleShape), contentAlignment = Alignment.Center) {
-            Icon(NavigationIcons.Workouts, contentDescription = null, Modifier.size(64.dp), tint = AccentText)
+    Box(Modifier.fillMaxWidth().height(180.dp).glassCard(32.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(128.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(NavigationIcons.Workouts, contentDescription = null, Modifier.size(64.dp), tint = Color.White)
         }
     }
     Column {
@@ -106,7 +109,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
         names.forEachIndexed { index, label ->
             val day = index + 1
             Box(Modifier.weight(1f).heightIn(min = 64.dp).clip(RoundedCornerShape(22.dp)).background(if (day in selected) Accent else SurfaceMuted).toggleable(value = day in selected, role = Role.Checkbox) { dispatch(AppIntent.ToggleDay(day)) }, contentAlignment = Alignment.Center) {
-                Text(label.take(1), fontWeight = FontWeight.Bold, color = TextPrimary)
+                Text(label.take(1), fontWeight = FontWeight.Bold, color = if (day in selected) Color.White else TextPrimary)
             }
         }
     }
@@ -115,7 +118,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
 }
 
 @Composable private fun PreferencesScreen(lowImpact: Boolean, dispatch: (AppIntent) -> Unit) = OnboardingFrame(3, "Make it work for your body", "You can change these preferences later.") {
-    Card(colors = CardDefaults.cardColors(containerColor = SurfaceMuted), shape = RoundedCornerShape(24.dp)) {
+    Card(Modifier.glassCard(24.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent), shape = RoundedCornerShape(24.dp)) {
         Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) { Text("Low-impact by default", fontWeight = FontWeight.Bold, fontSize = 18.sp); Text("No jumping in your generated plan", color = TextPrimary.copy(.6f)) }
             Switch(lowImpact, { dispatch(AppIntent.SetLowImpact(it)) })
@@ -127,7 +130,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
 
 @Composable private fun PlanReady(days: Int, onEnter: () -> Unit) = Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), contentAlignment = Alignment.Center) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(Modifier.size(112.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Text("✓", fontSize = 52.sp, fontWeight = FontWeight.Bold) }
+        Box(Modifier.size(112.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Text("✓", fontSize = 52.sp, fontWeight = FontWeight.Bold, color = Color.White) }
         Spacer(Modifier.height(28.dp)); Text("Your plan is ready", fontSize = 34.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
         Text("28 days • $days workouts/week • no equipment", color = TextSecondary, fontSize = 17.sp, textAlign = TextAlign.Center)
         Spacer(Modifier.height(30.dp)); PrimaryButton("See today's workout", onEnter)
@@ -139,26 +142,32 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
         containerColor = PageBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)
-                .clip(RoundedCornerShape(32.dp)).background(SurfaceMuted).padding(6.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                listOf(AppRoute.HOME to "Today", AppRoute.LIBRARY to "Workouts", AppRoute.PROGRESS to "Progress", AppRoute.PROFILE to "Profile").forEach { (route, label) ->
-                    val selected = route == state.selectedTab
-                    Surface(
-                        onClick = { dispatch(AppIntent.SelectTab(route)) },
-                        modifier = Modifier.weight(1f).semantics { this.selected = selected },
-                        shape = RoundedCornerShape(26.dp),
-                        color = if (selected) Accent else Color.Transparent,
-                        contentColor = if (selected) TextPrimary else TextSecondary,
-                    ) {
-                        Column(Modifier.padding(vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Icon(
-                                imageVector = NavigationIcons.forRoute(route),
-                                contentDescription = null, // The visible tab label supplies accessibility text.
-                                modifier = Modifier.size(24.dp),
-                            )
-                            Text(label, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium)
+            Column {
+                if (state.route == AppRoute.HOME) {
+                    val workout = state.program.firstOrNull { it.workout != null }?.workout ?: SeedCatalog.workouts.first()
+                    FloatingWorkoutAction { dispatch(AppIntent.OpenWorkout(workout)) }
+                }
+                Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)
+                    .glassCard(32.dp).padding(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    listOf(AppRoute.HOME to "Today", AppRoute.LIBRARY to "Workouts", AppRoute.PROGRESS to "Progress", AppRoute.PROFILE to "Profile").forEach { (route, label) ->
+                        val selected = route == state.selectedTab
+                        Surface(
+                            onClick = { dispatch(AppIntent.SelectTab(route)) },
+                            modifier = Modifier.weight(1f).semantics { this.selected = selected },
+                            shape = RoundedCornerShape(26.dp),
+                            color = if (selected) Accent else Color.Transparent,
+                            contentColor = if (selected) Color.White else TextSecondary,
+                        ) {
+                            Column(Modifier.padding(vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Icon(
+                                    imageVector = NavigationIcons.forRoute(route),
+                                    contentDescription = null, // The visible tab label supplies accessibility text.
+                                    modifier = Modifier.size(24.dp),
+                                )
+                                Text(label, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium)
+                            }
                         }
                     }
                 }
@@ -179,18 +188,24 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
 
 @Composable private fun HomeScreen(state: AppState, dispatch: (AppIntent) -> Unit) {
     val today = state.program.firstOrNull { it.workout != null }?.workout ?: SeedCatalog.workouts.first()
+    val weekday by produceState(currentLocalWeekday()) {
+        while (isActive) {
+            value = currentLocalWeekday()
+            delay(30_000)
+        }
+    }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.size(48.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) {
-                Icon(NavigationIcons.Today, contentDescription = null, tint = TextPrimary)
+                Icon(NavigationIcons.Today, contentDescription = null, tint = Color.White)
             }
             Column(Modifier.weight(1f)) { Text("Good morning", color = TextSecondary, fontSize = 14.sp); Text("HomeFit", fontSize = 23.sp, fontWeight = FontWeight.Bold) }
             Badge("WEEK 1")
         }
         SectionHeading("This week", "Schedule →") { dispatch(AppIntent.Navigate(AppRoute.WEEKLY_SCHEDULE)) }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { (1..7).forEach { DayDot(it, it in state.profile.workoutDays, it == 1) } }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { (1..7).forEach { DayDot(it, it in state.profile.workoutDays, it == weekday) } }
         Text("Today's planned workout", style = MaterialTheme.typography.titleLarge)
-        WorkoutCard(today, "Start workout  →") { dispatch(AppIntent.OpenWorkout(today)) }
+        WorkoutCard(today, null) { dispatch(AppIntent.OpenWorkout(today)) }
         SectionHeading("Healthy habits", "Details →") { dispatch(AppIntent.Navigate(AppRoute.HABITS_DETAIL)) }
         HabitRow("Water check", "Stay hydrated today", state.waterDone) { dispatch(AppIntent.ToggleWater) }
         HabitRow("Daily walk", "Aim for a little extra movement", state.walkDone) { dispatch(AppIntent.ToggleWalk) }
@@ -207,7 +222,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
 
 @Composable private fun ProgressScreen(state: AppState, dispatch: (AppIntent) -> Unit) = Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
     ScreenTitle("Your progress", "Consistency beats intensity.")
-    Box(Modifier.fillMaxWidth().height(140.dp).background(AccentSoft, RoundedCornerShape(28.dp)), contentAlignment = Alignment.Center) {
+    Box(Modifier.fillMaxWidth().height(140.dp).glassCard(28.dp), contentAlignment = Alignment.Center) {
         Icon(NavigationIcons.Progress, contentDescription = null, Modifier.size(72.dp), tint = AccentText)
     }
     MetricStrip(listOf("${state.completedWorkoutIds.size}" to "workouts", "${state.completedWorkoutIds.size * 14}" to "minutes", "1" to "day streak"))
@@ -217,8 +232,8 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
 
 @Composable private fun ProfileScreen(state: AppState, dispatch: (AppIntent) -> Unit) = Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
     ScreenTitle("Profile", "Your plan. Your pace.")
-    Row(Modifier.fillMaxWidth().background(AccentSoft, RoundedCornerShape(28.dp)).padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        Box(Modifier.size(56.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Icon(NavigationIcons.Profile, contentDescription = null, tint = TextPrimary) }
+    Row(Modifier.fillMaxWidth().glassCard(28.dp).padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Box(Modifier.size(56.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Icon(NavigationIcons.Profile, contentDescription = null, tint = Color.White) }
         Column { Text("Your HomeFit plan", style = MaterialTheme.typography.titleMedium); Text("28 days of movement", color = AccentText) }
     }
     SettingRow("Goal", state.profile.goal.name.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() })
@@ -244,8 +259,8 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
         }
         LinearProgressIndicator(progress = { (player.exerciseIndex + 1f) / player.workout.exercises.size }, Modifier.fillMaxWidth().height(6.dp).clip(CircleShape), color = Accent, trackColor = SurfaceMuted)
         if (player.phase == PlayerPhase.REST) {
-            Box(Modifier.size(230.dp).background(AccentSoft, CircleShape), contentAlignment = Alignment.Center) {
-                Text("REST", fontSize = 46.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Box(Modifier.size(230.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) {
+                Text("REST", fontSize = 46.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
         } else {
             ExerciseAnimation(item.exercise, playing = player.phase == PlayerPhase.EXERCISE, modifier = Modifier.size(230.dp))
@@ -260,7 +275,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
 
 @Composable private fun CompleteScreen(onDone: () -> Unit) = Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), contentAlignment = Alignment.Center) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        Box(Modifier.size(120.dp).background(AccentSoft, CircleShape), contentAlignment = Alignment.Center) { Text("✓", fontSize = 60.sp, color = AccentText) }
+        Box(Modifier.size(120.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Text("✓", fontSize = 60.sp, color = Color.White) }
         Text("Workout complete!", style = MaterialTheme.typography.headlineLarge, textAlign = TextAlign.Center)
         Text("You showed up. That's the win.", color = TextSecondary)
         PrimaryButton("Back to today", onDone)
@@ -275,25 +290,29 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
     Spacer(Modifier.height(4.dp)); content()
 }
 
-@Composable private fun ChoiceCard(title: String, subtitle: String, symbol: String, onClick: () -> Unit) = Card(onClick, Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = SurfaceMuted), shape = RoundedCornerShape(26.dp)) {
+@Composable private fun ChoiceCard(title: String, subtitle: String, symbol: String, onClick: () -> Unit) = Card(onClick, Modifier.fillMaxWidth().glassCard(26.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent), shape = RoundedCornerShape(26.dp)) {
     Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        Box(Modifier.size(48.dp).background(AccentSoft, CircleShape), contentAlignment = Alignment.Center) { Text(symbol, fontSize = 26.sp, color = AccentText) }
+        Box(Modifier.size(48.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Text(symbol, fontSize = 26.sp, color = Color.White) }
         Column(Modifier.weight(1f)) { Text(title, style = MaterialTheme.typography.titleMedium); Text(subtitle, color = TextSecondary) }
         Text("›", fontSize = 24.sp)
     }
 }
-@Composable private fun InfoPanel(text: String) = Box(Modifier.fillMaxWidth().background(SurfaceMuted, RoundedCornerShape(20.dp)).padding(18.dp)) { Text(text, lineHeight = 22.sp, color = TextPrimary.copy(.75f)) }
-@Composable private fun DayDot(day: Int, active: Boolean, today: Boolean) = Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+@Composable private fun InfoPanel(text: String) = Box(Modifier.fillMaxWidth().glassCard(20.dp).padding(18.dp)) { Text(text, lineHeight = 22.sp, color = TextPrimary.copy(.75f)) }
+@Composable private fun DayDot(day: Int, active: Boolean, today: Boolean) = Column(Modifier.semantics {
+    contentDescription = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")[day - 1] +
+        (if (today) ", today" else "") + (if (active) ", workout scheduled" else ", recovery day")
+    selected = today
+}, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
     Text(listOf("M","T","W","T","F","S","S")[day-1], fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     Box(Modifier.size(34.dp).border(2.dp, if (today) Accent else Color.Transparent, CircleShape).padding(4.dp)
         .background(if (today) Accent else if (active) TextPrimary else SurfaceMuted, CircleShape), contentAlignment = Alignment.Center) {
-        Text(if (active) "•" else "–", color = if (active && !today) Color.White else TextPrimary)
+        Text(if (active) "•" else "–", color = if (active || today) Color.White else TextPrimary)
     }
 }
-@Composable private fun HabitRow(title: String, subtitle: String, done: Boolean, onClick: () -> Unit) = Card(onClick, Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = SurfaceMuted), shape = RoundedCornerShape(24.dp)) {
+@Composable private fun HabitRow(title: String, subtitle: String, done: Boolean, onClick: () -> Unit) = Card(onClick, Modifier.fillMaxWidth().glassCard(24.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent), shape = RoundedCornerShape(24.dp)) {
     Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(40.dp).background(if (done) TextPrimary else Color.White, CircleShape), contentAlignment = Alignment.Center) { Text(if (done) "✓" else "○", color = if (done) Color.White else TextSecondary) }
         Column(Modifier.padding(start = 14.dp)) { Text(title, style = MaterialTheme.typography.titleMedium); Text(subtitle, color = TextSecondary, fontSize = 13.sp) }
     }
 }
-@Composable private fun SettingRow(label: String, value: String) = Row(Modifier.fillMaxWidth().background(SurfaceMuted, RoundedCornerShape(24.dp)).padding(18.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) { Text(label, Modifier.weight(1f), fontWeight = FontWeight.SemiBold); Text(value, Modifier.weight(1f), color = TextSecondary, textAlign = TextAlign.End) }
+@Composable private fun SettingRow(label: String, value: String) = Row(Modifier.fillMaxWidth().glassCard(24.dp).padding(18.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) { Text(label, Modifier.weight(1f), fontWeight = FontWeight.SemiBold); Text(value, Modifier.weight(1f), color = TextSecondary, textAlign = TextAlign.End) }

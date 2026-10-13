@@ -29,7 +29,7 @@ fun SplashScreen(onFinished: () -> Unit) {
     LaunchedEffect(Unit) { delay(700); onFinished() }
     Box(Modifier.fillMaxSize().background(PageBackground), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(Modifier.size(92.dp).background(Accent, RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center) { Icon(NavigationIcons.Workouts, contentDescription = null, Modifier.size(48.dp), tint = TextPrimary) }
+            Box(Modifier.size(92.dp).background(Accent, RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center) { Icon(NavigationIcons.Workouts, contentDescription = null, Modifier.size(48.dp), tint = Color.White) }
             Spacer(Modifier.height(20.dp)); Text("homefit", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 34.sp)
             Text("MOVE WELL. FEEL STRONGER.", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
         }
@@ -59,7 +59,7 @@ fun RestrictionsScreen(dispatch: (AppIntent) -> Unit) = DetailFrame("Anything to
 
 @Composable
 fun ReminderSetupScreen(dispatch: (AppIntent) -> Unit) = DetailFrame("Set a gentle reminder", "Choose when HomeFit should nudge you on workout days.", dispatch) {
-    Card(colors = CardDefaults.cardColors(containerColor = SurfaceMuted), shape = RoundedCornerShape(22.dp)) {
+    Card(Modifier.glassCard(22.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent), shape = RoundedCornerShape(22.dp)) {
         Column(Modifier.fillMaxWidth().padding(20.dp)) { Text("WORKOUT DAYS", color = TextSecondary, fontWeight = FontWeight.Bold); Text("07:00", fontSize = 40.sp, fontWeight = FontWeight.Bold); Text("You can change this later in Profile.", color = TextPrimary.copy(.6f)) }
     }
     WideButton("Use this reminder") { dispatch(AppIntent.ConfirmReminder) }
@@ -71,8 +71,8 @@ fun CreatingPlanScreen(dispatch: (AppIntent) -> Unit) {
     LaunchedEffect(Unit) { delay(900); dispatch(AppIntent.CreatePlan) }
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(30.dp), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(Modifier.size(120.dp).background(AccentSoft, CircleShape), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = AccentText, trackColor = Color.White)
+            Box(Modifier.size(120.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Color.White, trackColor = Color.White.copy(.25f))
             }
             Spacer(Modifier.height(28.dp)); Text("Creating your plan", fontSize = 30.sp, fontWeight = FontWeight.Bold)
             Text("Balancing movement, recovery, and your selected weekdays…", color = TextSecondary, textAlign = TextAlign.Center)
@@ -83,8 +83,8 @@ fun CreatingPlanScreen(dispatch: (AppIntent) -> Unit) {
 @Composable
 fun WeeklyScheduleScreen(state: AppState, dispatch: (AppIntent) -> Unit) = DetailFrame("Your 28-day schedule", "Workouts stay anchored to the weekdays you chose.", dispatch) {
     state.program.take(14).forEach { day ->
-        Row(Modifier.fillMaxWidth().background(SurfaceMuted, RoundedCornerShape(24.dp)).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(44.dp).background(if (day.workout != null) AccentSoft else SurfaceMuted, CircleShape), contentAlignment = Alignment.Center) { Text(day.dayNumber.toString(), fontWeight = FontWeight.Bold) }
+        Row(Modifier.fillMaxWidth().glassCard(24.dp).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(44.dp).background(if (day.workout != null) Accent else SurfaceMuted, CircleShape), contentAlignment = Alignment.Center) { Text(day.dayNumber.toString(), fontWeight = FontWeight.Bold, color = if (day.workout != null) Color.White else TextPrimary) }
             Column(Modifier.padding(start = 14.dp).weight(1f)) { Text(day.workout?.name ?: "Recovery day", fontWeight = FontWeight.Bold); Text(if (day.workout != null) "${day.workout.durationMinutes} minutes" else "Walk, stretch, or rest", color = TextSecondary) }
             if (day.workout != null) TextButton({ dispatch(AppIntent.OpenWorkout(day.workout)) }, colors = ButtonDefaults.textButtonColors(contentColor = TextPrimary)) { Text("View →") }
         }
@@ -92,17 +92,21 @@ fun WeeklyScheduleScreen(state: AppState, dispatch: (AppIntent) -> Unit) = Detai
 }
 
 @Composable
-fun WorkoutDetailScreen(workout: Workout?, dispatch: (AppIntent) -> Unit, onStart: () -> Unit) = DetailFrame(workout?.name ?: "Workout", "A clear preview before you begin.", dispatch) {
-    if (workout == null) return@DetailFrame
-    MetricStrip(listOf("${workout.durationMinutes}" to "minutes", "${workout.exercises.size}" to "moves", "LOW" to "impact"))
-    Text("Workout flow", fontSize = 21.sp, fontWeight = FontWeight.Bold)
-    workout.exercises.forEachIndexed { index, item ->
-        Row(Modifier.fillMaxWidth().background(SurfaceMuted, RoundedCornerShape(24.dp)).clickable { dispatch(AppIntent.OpenExercise(item.exercise)) }.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(36.dp).background(AccentSoft, CircleShape), contentAlignment = Alignment.Center) { Text("${index + 1}", fontWeight = FontWeight.Bold, color = AccentText) }
-            Column(Modifier.padding(start = 14.dp).weight(1f)) { Text(item.exercise.name, fontWeight = FontWeight.SemiBold); Text(item.reps?.let { "$it reps" } ?: "${item.durationSeconds} sec", color = TextSecondary) }; Text("›")
+fun WorkoutDetailScreen(workout: Workout?, dispatch: (AppIntent) -> Unit, onStart: () -> Unit) = Column(Modifier.fillMaxSize()) {
+    Box(Modifier.weight(1f)) {
+        DetailFrame(workout?.name ?: "Workout", "A clear preview before you begin.", dispatch) {
+            if (workout == null) return@DetailFrame
+            MetricStrip(listOf("${workout.durationMinutes}" to "minutes", "${workout.exercises.size}" to "moves", "LOW" to "impact"))
+            Text("Workout flow", fontSize = 21.sp, fontWeight = FontWeight.Bold)
+            workout.exercises.forEachIndexed { index, item ->
+                Row(Modifier.fillMaxWidth().glassCard(24.dp).clickable { dispatch(AppIntent.OpenExercise(item.exercise)) }.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(36.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Text("${index + 1}", fontWeight = FontWeight.Bold, color = Color.White) }
+                    Column(Modifier.padding(start = 14.dp).weight(1f)) { Text(item.exercise.name, fontWeight = FontWeight.SemiBold); Text(item.reps?.let { "$it reps" } ?: "${item.durationSeconds} sec", color = TextSecondary) }; Text("›")
+                }
+            }
         }
     }
-    WideButton("Start workout", onStart)
+    if (workout != null) FloatingWorkoutAction(onStart)
 }
 
 @Composable
@@ -178,7 +182,7 @@ fun SettingsScreen(dispatch: (AppIntent) -> Unit) = DetailFrame("Settings", "Hom
 @Composable
 fun PausedScreen(dispatch: (AppIntent) -> Unit) = Box(Modifier.fillMaxSize().background(TextPrimary).verticalScroll(rememberScrollState()).padding(28.dp), contentAlignment = Alignment.Center) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        Box(Modifier.size(112.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Text("Ⅱ", fontSize = 54.sp, color = TextPrimary) }
+        Box(Modifier.size(112.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Text("Ⅱ", fontSize = 54.sp, color = Color.White) }
         Badge("WORKOUT PAUSED")
         Text("Take your time", color = Color.White, fontSize = 38.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
         Text("Your place in the workout is safe.", color = Color.White.copy(.65f)); Spacer(Modifier.height(30.dp))
@@ -208,21 +212,21 @@ private fun DetailFrame(title: String, subtitle: String, dispatch: (AppIntent) -
     }
 }
 
-@Composable private fun SelectCard(title: String, subtitle: String, onClick: () -> Unit) = Card(onClick, Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = SurfaceMuted), shape = RoundedCornerShape(26.dp)) {
+@Composable private fun SelectCard(title: String, subtitle: String, onClick: () -> Unit) = Card(onClick, Modifier.fillMaxWidth().glassCard(26.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent), shape = RoundedCornerShape(26.dp)) {
     Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(title, style = MaterialTheme.typography.titleMedium); Text(subtitle, color = TextSecondary) }
         Box(Modifier.size(36.dp).background(Color.White, CircleShape), contentAlignment = Alignment.Center) { Text("→", color = TextPrimary) }
     }
 }
-@Composable private fun CheckRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit) = Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp))
-    .background(if (checked) AccentSoft else SurfaceMuted).toggleable(value = checked, role = Role.Checkbox, onValueChange = onChange).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-    Text(title, Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
-    Checkbox(checked, onCheckedChange = null, colors = CheckboxDefaults.colors(checkedColor = TextPrimary, checkmarkColor = Color.White))
+@Composable private fun CheckRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit) = Row(Modifier.fillMaxWidth().glassCard(24.dp)
+    .background(if (checked) Accent else Color.Transparent).toggleable(value = checked, role = Role.Checkbox, onValueChange = onChange).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Text(title, Modifier.weight(1f), fontWeight = FontWeight.SemiBold, color = if (checked) Color.White else TextPrimary)
+    Checkbox(checked, onCheckedChange = null, colors = CheckboxDefaults.colors(checkedColor = Color.White, checkmarkColor = Accent))
 }
-@Composable private fun SettingCard(title: String, subtitle: String) = Column(Modifier.fillMaxWidth().background(SurfaceMuted, RoundedCornerShape(24.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) { Text(title, style = MaterialTheme.typography.titleMedium); Text(subtitle, color = TextSecondary) }
-@Composable private fun InfoBox(text: String) = Text(text, Modifier.fillMaxWidth().background(AccentSoft, RoundedCornerShape(24.dp)).padding(20.dp), color = AccentText, lineHeight = 23.sp)
+@Composable private fun SettingCard(title: String, subtitle: String) = Column(Modifier.fillMaxWidth().glassCard(24.dp).padding(20.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) { Text(title, style = MaterialTheme.typography.titleMedium); Text(subtitle, color = TextSecondary) }
+@Composable private fun InfoBox(text: String) = Text(text, Modifier.fillMaxWidth().glassCard(24.dp).padding(20.dp), color = AccentText, lineHeight = 23.sp)
 @Composable private fun WideButton(text: String, onClick: () -> Unit) = PrimaryButton(text, onClick)
-@Composable private fun EmptyState(title: String, subtitle: String) = Column(Modifier.fillMaxWidth().background(SurfaceMuted, RoundedCornerShape(28.dp)).padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+@Composable private fun EmptyState(title: String, subtitle: String) = Column(Modifier.fillMaxWidth().glassCard(28.dp).padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
     Icon(NavigationIcons.Progress, contentDescription = null, Modifier.size(48.dp), tint = AccentText)
     Text(title, fontWeight = FontWeight.Bold, fontSize = 19.sp, textAlign = TextAlign.Center)
     Text(subtitle, color = TextSecondary, textAlign = TextAlign.Center)
