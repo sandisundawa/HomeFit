@@ -1,6 +1,8 @@
 package com.homefit
 
 import android.os.Bundle
+import android.app.AlertDialog
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
@@ -27,6 +29,19 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (appViewModel.state.value.route == com.homefit.feature.app.AppRoute.HOME) {
+                    AlertDialog.Builder(this@MainActivity)
+                        .setMessage("Are you sure want to close the app?")
+                        .setPositiveButton("Yes") { _, _ -> finish() }
+                        .setNegativeButton("No", null)
+                        .show()
+                } else {
+                    appViewModel.dispatch(com.homefit.feature.app.AppIntent.Back)
+                }
+            }
+        })
         setContent { HomeFitApp(appViewModel) }
     }
 }
