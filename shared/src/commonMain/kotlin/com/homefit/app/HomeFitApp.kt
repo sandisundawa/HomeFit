@@ -213,10 +213,13 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
 }
 
 @Composable private fun LibraryScreen(dispatch: (AppIntent) -> Unit) = Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-    ScreenTitle("Workouts", "Beginner sessions for every kind of day.")
+    ScreenTitle("Workouts", "All four weeks of workouts for your 28-day plan.")
     OutlinedButton({ dispatch(AppIntent.Navigate(AppRoute.WORKOUT_CATEGORY)) }, Modifier.fillMaxWidth()) { Text("Browse by category") }
-    SeedCatalog.workouts.take(8).forEach { workout ->
-        WorkoutCard(workout, "View workout · Week ${workout.week}  →") { dispatch(AppIntent.OpenWorkout(workout)) }
+    SeedCatalog.workouts.groupBy { it.week }.forEach { (week, workouts) ->
+        Text("Week $week", style = MaterialTheme.typography.titleLarge)
+        workouts.forEach { workout ->
+            WorkoutCard(workout, "View workout · Week ${workout.week}  →") { dispatch(AppIntent.OpenWorkout(workout)) }
+        }
     }
 }
 

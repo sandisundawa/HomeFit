@@ -82,7 +82,7 @@ fun CreatingPlanScreen(dispatch: (AppIntent) -> Unit) {
 
 @Composable
 fun WeeklyScheduleScreen(state: AppState, dispatch: (AppIntent) -> Unit) = DetailFrame("Your 28-day schedule", "Workouts stay anchored to the weekdays you chose.", dispatch) {
-    state.program.take(14).forEach { day ->
+    state.program.forEach { day ->
         Row(Modifier.fillMaxWidth().glassCard(24.dp).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(44.dp).background(if (day.workout != null) Accent else SurfaceMuted, CircleShape), contentAlignment = Alignment.Center) { Text(day.dayNumber.toString(), fontWeight = FontWeight.Bold, color = if (day.workout != null) Color.White else TextPrimary) }
             Column(Modifier.padding(start = 14.dp).weight(1f)) { Text(day.workout?.name ?: "Recovery day", fontWeight = FontWeight.Bold); Text(if (day.workout != null) "${day.workout.durationMinutes} minutes" else "Walk, stretch, or rest", color = TextSecondary) }

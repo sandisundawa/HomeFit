@@ -52,6 +52,23 @@ class ScreenRenderTest {
                             }
                         }
                         val nodes = scene.semanticsOwners.flatMap { descendants(it.rootSemanticsNode) }
+                        val texts = nodes.flatMap { it.config.getOrNull(SemanticsProperties.Text).orEmpty() }.map { it.text }
+                        if (state.route == AppRoute.LIBRARY) {
+                            for (week in 1..4) assertTrue("Week $week" in texts, "Library must include week $week")
+                            val workoutButtons = nodes.filter { node ->
+                                node.config.getOrNull(SemanticsActions.OnClick) != null &&
+                                    node.config.getOrNull(SemanticsProperties.Text)?.any { it.text.startsWith("View workout · Week") } == true
+                            }
+                            assertEquals(SeedCatalog.workouts.size, workoutButtons.size, "Every catalog workout must be reachable")
+                            workoutButtons.zip(SeedCatalog.workouts).forEach { (button, expectedWorkout) ->
+                                button.config[SemanticsActions.OnClick].action!!.invoke()
+                                assertEquals(AppIntent.OpenWorkout(expectedWorkout), actions.last())
+                            }
+                        }
+                        if (state.route == AppRoute.WEEKLY_SCHEDULE) {
+                            for (day in 1..28) assertTrue(day.toString() in texts, "Schedule must include day $day")
+                            assertEquals(state.program.count { it.workout == null }, texts.count { it == "Recovery day" })
+                        }
                         if (state.route == AppRoute.HOME || state.route == AppRoute.WORKOUT_DETAIL) {
                             val start = nodes.single { node ->
                                 node.config.getOrNull(SemanticsActions.OnClick) != null &&
