@@ -309,7 +309,8 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
     Text(listOf("M","T","W","T","F","S","S")[day-1], fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     Box(Modifier.size(34.dp).border(2.dp, if (today) Accent else Color.Transparent, CircleShape).padding(4.dp)
         .background(if (today) Accent else if (active) TextPrimary else SurfaceMuted, CircleShape), contentAlignment = Alignment.Center) {
-        Text(if (active) "•" else "–", color = if (active || today) Color.White else TextPrimary)
+        Box(Modifier.size(width = if (active) 6.dp else 8.dp, height = if (active) 6.dp else 2.dp)
+            .background(if (active || today) Color.White else TextPrimary, CircleShape))
     }
 }
 @Composable private fun HabitRow(title: String, subtitle: String, done: Boolean, onClick: () -> Unit) = Card(onClick, Modifier.fillMaxWidth().glassCard(24.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent), shape = RoundedCornerShape(24.dp)) {
