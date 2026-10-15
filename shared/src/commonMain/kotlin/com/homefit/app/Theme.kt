@@ -9,6 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import org.jetbrains.compose.resources.Font
+import homefit.shared.generated.resources.Res
+import homefit.shared.generated.resources.lato_regular
+import homefit.shared.generated.resources.lato_semibold
+import homefit.shared.generated.resources.lato_bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -22,21 +28,26 @@ val Mist = Color(0xFFE5EAE4)
 // Keep the original palette above for the unchanged trainer demonstrations.
 val TextPrimary = Color(0xFF191919)
 val TextSecondary = Color(0xFF666666)
-val Accent = Color(0xFFFF7900)
+val Accent = Color(0xFFC65300)
 val AccentText = Color(0xFFAD4800)
-val AccentSoft = Color(0xFFFFEBDD)
-val PageBackground = Color.White
+val PageBackground = Color(0xFFF5F3F0)
 val SurfaceMuted = Color(0xFFF2F2F2)
 val Outline = Color(0xFFE5E5E5)
 
 @Composable
 fun HomeFitTheme(content: @Composable () -> Unit) {
+    val lato = FontFamily(
+        Font(Res.font.lato_regular, FontWeight.Normal),
+        Font(Res.font.lato_semibold, FontWeight.SemiBold),
+        Font(Res.font.lato_bold, FontWeight.Bold),
+    )
+    val defaults = Typography()
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = AccentText,
             onPrimary = Color.White,
-            primaryContainer = AccentSoft,
-            onPrimaryContainer = AccentText,
+            primaryContainer = Accent,
+            onPrimaryContainer = Color.White,
             secondary = TextPrimary,
             onSecondary = Color.White,
             secondaryContainer = SurfaceMuted,
@@ -60,13 +71,21 @@ fun HomeFitTheme(content: @Composable () -> Unit) {
             extraLarge = RoundedCornerShape(32.dp),
         ),
         typography = Typography(
-            headlineLarge = TextStyle(fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold, letterSpacing = (-1).sp),
-            headlineMedium = TextStyle(fontSize = 26.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold, letterSpacing = (-.5).sp),
-            titleLarge = TextStyle(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold),
-            titleMedium = TextStyle(fontSize = 17.sp, lineHeight = 23.sp, fontWeight = FontWeight.SemiBold),
-            bodyLarge = TextStyle(fontSize = 16.sp, lineHeight = 24.sp),
-            bodyMedium = TextStyle(fontSize = 14.sp, lineHeight = 21.sp),
-            labelLarge = TextStyle(fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold),
+            displayLarge = defaults.displayLarge.copy(fontFamily = lato),
+            displayMedium = defaults.displayMedium.copy(fontFamily = lato),
+            displaySmall = defaults.displaySmall.copy(fontFamily = lato),
+            headlineLarge = TextStyle(fontFamily = lato, fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold, letterSpacing = (-1).sp),
+            headlineMedium = TextStyle(fontFamily = lato, fontSize = 26.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold, letterSpacing = (-.5).sp),
+            headlineSmall = defaults.headlineSmall.copy(fontFamily = lato),
+            titleLarge = TextStyle(fontFamily = lato, fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold),
+            titleMedium = TextStyle(fontFamily = lato, fontSize = 17.sp, lineHeight = 23.sp, fontWeight = FontWeight.SemiBold),
+            titleSmall = defaults.titleSmall.copy(fontFamily = lato),
+            bodyLarge = TextStyle(fontFamily = lato, fontSize = 16.sp, lineHeight = 24.sp),
+            bodyMedium = TextStyle(fontFamily = lato, fontSize = 14.sp, lineHeight = 21.sp),
+            bodySmall = defaults.bodySmall.copy(fontFamily = lato),
+            labelLarge = TextStyle(fontFamily = lato, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold),
+            labelMedium = defaults.labelMedium.copy(fontFamily = lato),
+            labelSmall = defaults.labelSmall.copy(fontFamily = lato),
         ),
         content = content,
     )
