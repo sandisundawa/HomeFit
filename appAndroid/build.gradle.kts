@@ -26,4 +26,5 @@ kotlin { compilerOptions.jvmTarget = JvmTarget.JVM_17 }
 dependencies {
     implementation(projects.shared)
     implementation(libs.androidx.activity.compose)
+    implementation("com.google.android.gms:play-services-ads:25.5.0")
 }

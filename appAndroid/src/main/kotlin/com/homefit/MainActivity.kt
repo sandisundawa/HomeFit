@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.room3.Room
+import com.google.android.gms.ads.MobileAds
 import com.homefit.app.HomeFitApp
 import com.homefit.core.database.AppDatabase
 import com.homefit.core.database.RoomAppStateRepository
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MobileAds.initialize(this)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (appViewModel.state.value.route == com.homefit.feature.app.AppRoute.HOME) {

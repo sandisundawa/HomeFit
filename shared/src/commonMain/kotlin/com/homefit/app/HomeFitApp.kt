@@ -221,6 +221,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
             WorkoutCard(workout, "View workout · Week ${workout.week}  →") { dispatch(AppIntent.OpenWorkout(workout)) }
         }
     }
+    QuietBannerAd()
 }
 
 @Composable private fun ProgressScreen(state: AppState, dispatch: (AppIntent) -> Unit) = Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {

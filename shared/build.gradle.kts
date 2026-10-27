@@ -27,6 +27,9 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            implementation("com.google.android.gms:play-services-ads:25.5.0")
+        }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
