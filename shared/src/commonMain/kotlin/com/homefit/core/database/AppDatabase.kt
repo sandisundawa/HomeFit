@@ -1,6 +1,9 @@
 package com.homefit.core.database
 
 import androidx.room3.*
+import androidx.room3.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -236,6 +239,12 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
 }
 
 fun RoomDatabase.Builder<AppDatabase>.withHomeFitDefaults(): RoomDatabase.Builder<AppDatabase> =
-    setDriver(BundledSQLiteDriver()).setQueryCoroutineContext(Dispatchers.Default)
+    setDriver(BundledSQLiteDriver()).setQueryCoroutineContext(Dispatchers.Default).addMigrations(MIGRATION_1_2)
+
+internal val MIGRATION_1_2 = object : Migration(1, 2) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("CREATE TABLE IF NOT EXISTS `app_state_snapshot` (`id` INTEGER NOT NULL, `json` TEXT NOT NULL, PRIMARY KEY(`id`))")
+    }
+}
 
 const val LOCAL_USER_ID = "local_user"

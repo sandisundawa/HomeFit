@@ -28,7 +28,9 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            implementation("com.github.PhilJay.MPAndroidChart:MPChartLib:v4.0.1")
             implementation("com.google.android.gms:play-services-ads:25.5.0")
+            implementation("com.google.android.ump:user-messaging-platform:4.0.0")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -38,6 +40,7 @@ kotlin {
             implementation(libs.compose.resources)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
             api(libs.androidx.room3.runtime)
             implementation(libs.androidx.sqlite.bundled)
             api(libs.androidx.lifecycle.viewmodel)

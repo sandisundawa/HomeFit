@@ -31,13 +31,28 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 @Composable
-fun HomeFitApp(viewModel: HomeFitViewModel) {
+fun HomeFitApp(viewModel: HomeFitViewModel, adsHost: AdsHost = NoOpAdsHost) {
+    val restoration by viewModel.restorationStatus.collectAsState()
+    if (restoration != RestorationStatus.READY) {
+        HomeFitTheme {
+            Surface(Modifier.fillMaxSize().safeDrawingPadding(), color = PageBackground) {
+                Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        if (restoration == RestorationStatus.LOADING) "Restoring your workout…"
+                        else "Unable to restore your workout. Please close and reopen the app.",
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
+        return
+    }
     val state by viewModel.state.collectAsState()
-    HomeFitContent(state, viewModel::dispatch, viewModel::beginSelectedWorkout)
+    HomeFitContent(state, viewModel::dispatch, viewModel::beginSelectedWorkout, adsHost)
 }
 
 @Composable
-internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onStartWorkout: () -> Unit) {
+internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onStartWorkout: () -> Unit, adsHost: AdsHost = NoOpAdsHost) {
     HomeFitTheme {
         Surface(Modifier.fillMaxSize().safeDrawingPadding(), color = PageBackground) {
             when (state.route) {
@@ -61,12 +76,12 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
                 AppRoute.EDIT_GOAL -> EditGoalScreen(state, dispatch)
                 AppRoute.SCHEDULE_SETTINGS -> ScheduleSettingsScreen(state, dispatch)
                 AppRoute.REMINDER_SETTINGS -> ReminderSettingsScreen(state, dispatch)
-                AppRoute.SETTINGS -> SettingsScreen(dispatch)
+                AppRoute.SETTINGS -> SettingsScreen(dispatch, adsHost)
                 AppRoute.PLAYER -> PlayerScreen(state.player, dispatch)
-                AppRoute.PAUSED -> PausedScreen(dispatch)
+                AppRoute.PAUSED -> PausedScreen(dispatch, state.player?.pausedByBackground == true)
                 AppRoute.COMPLETE -> CompleteScreen { dispatch(AppIntent.ShowWorkoutResult) }
-                AppRoute.WORKOUT_RESULT -> WorkoutResultScreen(state, dispatch)
-                else -> MainScaffold(state, dispatch)
+                AppRoute.WORKOUT_RESULT -> WorkoutResultScreen(state, dispatch, adsHost)
+                else -> MainScaffold(state, dispatch, adsHost)
             }
         }
     }
@@ -137,7 +152,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
     }
 }
 
-@Composable private fun MainScaffold(state: AppState, dispatch: (AppIntent) -> Unit) {
+@Composable private fun MainScaffold(state: AppState, dispatch: (AppIntent) -> Unit, adsHost: AdsHost = NoOpAdsHost) {
     Scaffold(
         containerColor = PageBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -179,7 +194,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
                 AppRoute.HOME -> HomeScreen(state, dispatch)
                 AppRoute.LIBRARY -> LibraryScreen(dispatch)
                 AppRoute.PROGRESS -> ProgressScreen(state, dispatch)
-                AppRoute.PROFILE -> ProfileScreen(state, dispatch)
+                AppRoute.PROFILE -> ProfileScreen(state, dispatch, adsHost)
                 else -> HomeScreen(state, dispatch)
             }
         }
@@ -195,6 +210,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
         }
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        QuietBannerAd()
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.size(48.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) {
                 Icon(NavigationIcons.Today, contentDescription = null, tint = Color.White)
@@ -234,7 +250,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
     OutlinedButton({ dispatch(AppIntent.Navigate(AppRoute.HISTORY)) }, Modifier.fillMaxWidth()) { Text("View workout history") }
 }
 
-@Composable private fun ProfileScreen(state: AppState, dispatch: (AppIntent) -> Unit) = Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+@Composable private fun ProfileScreen(state: AppState, dispatch: (AppIntent) -> Unit, adsHost: AdsHost = NoOpAdsHost) = Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
     ScreenTitle("Profile", "Your plan. Your pace.")
     Row(Modifier.fillMaxWidth().glassCard(28.dp).padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         Box(Modifier.size(56.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Icon(NavigationIcons.Profile, contentDescription = null, tint = Color.White) }
@@ -248,6 +264,14 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
     OutlinedButton({ dispatch(AppIntent.Navigate(AppRoute.SCHEDULE_SETTINGS)) }, Modifier.fillMaxWidth()) { Text("Schedule settings") }
     OutlinedButton({ dispatch(AppIntent.Navigate(AppRoute.REMINDER_SETTINGS)) }, Modifier.fillMaxWidth()) { Text("Reminder settings") }
     OutlinedButton({ dispatch(AppIntent.Navigate(AppRoute.SETTINGS)) }, Modifier.fillMaxWidth()) { Text("General settings") }
+    if (!adsHost.supportsRewarded && !state.bonusWorkoutUnlocked) {
+        // The platform has no rewarded implementation; keep the unavailable reward hidden.
+    } else if (state.bonusWorkoutUnlocked) {
+        OutlinedButton({ dispatch(AppIntent.OpenBonusWorkout) }, Modifier.fillMaxWidth()) { Text("Start bonus workout") }
+    } else {
+        InfoPanel("Optional: watch a short ad to unlock one bonus session. It never changes your 28-day schedule.")
+        OutlinedButton({ adsHost.showBonusRewarded({ dispatch(AppIntent.GrantBonusWorkout) }, {}) }, Modifier.fillMaxWidth()) { Text("Watch ad to unlock bonus workout") }
+    }
     OutlinedButton({ dispatch(AppIntent.ResetApp) }, Modifier.fillMaxWidth()) { Text("Reset onboarding") }
 }
 

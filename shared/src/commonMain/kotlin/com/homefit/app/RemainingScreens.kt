@@ -82,6 +82,7 @@ fun CreatingPlanScreen(dispatch: (AppIntent) -> Unit) {
 
 @Composable
 fun WeeklyScheduleScreen(state: AppState, dispatch: (AppIntent) -> Unit) = DetailFrame("Your 28-day schedule", "Workouts stay anchored to the weekdays you chose.", dispatch) {
+    QuietBannerAd()
     state.program.forEach { day ->
         Row(Modifier.fillMaxWidth().glassCard(24.dp).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(44.dp).background(if (day.workout != null) Accent else SurfaceMuted, CircleShape), contentAlignment = Alignment.Center) { Text(day.dayNumber.toString(), fontWeight = FontWeight.Bold, color = if (day.workout != null) Color.White else TextPrimary) }
@@ -130,15 +131,6 @@ fun WorkoutCategoryScreen(dispatch: (AppIntent) -> Unit) = DetailFrame("Browse b
 }
 
 @Composable
-fun HistoryScreen(state: AppState, dispatch: (AppIntent) -> Unit) = DetailFrame("Workout history", "Your completed sessions appear here.", dispatch) {
-    if (state.completedWorkoutIds.isEmpty()) EmptyState("No completed workouts yet", "Your first finished session will show here.")
-    else state.completedWorkoutIds.forEach { id ->
-        val workout = SeedCatalog.workouts.firstOrNull { it.id == id }
-        SettingCard(workout?.name ?: "Workout", "Completed • ${workout?.durationMinutes ?: 0} minutes")
-    }
-}
-
-@Composable
 fun HabitsDetailScreen(state: AppState, dispatch: (AppIntent) -> Unit) = DetailFrame("Healthy habits", "Small actions that support your workout routine.", dispatch) {
     CheckRow("Drink enough water", state.waterDone) { dispatch(AppIntent.ToggleWater) }
     CheckRow("Take a daily walk", state.walkDone) { dispatch(AppIntent.ToggleWalk) }
@@ -171,38 +163,42 @@ fun ReminderSettingsScreen(state: AppState, dispatch: (AppIntent) -> Unit) = Det
 }
 
 @Composable
-fun SettingsScreen(dispatch: (AppIntent) -> Unit) = DetailFrame("Settings", "HomeFit stays local and works offline.", dispatch) {
+fun SettingsScreen(dispatch: (AppIntent) -> Unit, adsHost: AdsHost = NoOpAdsHost) = DetailFrame("Settings", "HomeFit stays local and works offline.", dispatch) {
     SettingCard("Units", "Metric")
     SettingCard("Exercise media", "Download on Wi-Fi")
     SettingCard("Sound & vibration", "Enabled")
     SettingCard("Privacy", "Your workout data stays on this device")
+    if (adsHost.supportsPrivacyOptions) WideButton("Privacy choices") { adsHost.showPrivacyOptions {} }
     SettingCard("About HomeFit", "Version 0.1.0")
 }
 
 @Composable
-fun PausedScreen(dispatch: (AppIntent) -> Unit) = Box(Modifier.fillMaxSize().background(TextPrimary).verticalScroll(rememberScrollState()).padding(28.dp), contentAlignment = Alignment.Center) {
+fun PausedScreen(dispatch: (AppIntent) -> Unit, pausedByBackground: Boolean = false) = Box(Modifier.fillMaxSize().background(TextPrimary).verticalScroll(rememberScrollState()).padding(28.dp), contentAlignment = Alignment.Center) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Box(Modifier.size(112.dp).background(Accent, CircleShape), contentAlignment = Alignment.Center) { Text("Ⅱ", fontSize = 54.sp, color = Color.White) }
         Badge("WORKOUT PAUSED")
         Text("Take your time", color = Color.White, fontSize = 38.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-        Text("Your place in the workout is safe.", color = Color.White.copy(.65f)); Spacer(Modifier.height(30.dp))
+        Text(if (pausedByBackground) "Paused while the app was away. Tap Resume to continue." else "Your place in the workout is safe.", color = Color.White.copy(.65f)); Spacer(Modifier.height(30.dp))
         PrimaryButton("Resume workout") { dispatch(AppIntent.ResumePlayer) }
         TextButton({ dispatch(AppIntent.ExitPlayer) }) { Text("End workout", color = Color.White) }
     }
 }
 
 @Composable
-fun WorkoutResultScreen(state: AppState, dispatch: (AppIntent) -> Unit) = DetailFrame("Session summary", "A little consistency compounds.", dispatch) {
+fun WorkoutResultScreen(state: AppState, dispatch: (AppIntent) -> Unit, adsHost: AdsHost = NoOpAdsHost) = DetailFrame("Session summary", "A little consistency compounds.", dispatch) {
     val workout = state.player?.workout
     MetricStrip(listOf("${workout?.exercises?.size ?: 0}" to "moves", "${workout?.durationMinutes ?: 0}" to "minutes", "100%" to "complete"))
     Text("How did it feel?", fontSize = 22.sp, fontWeight = FontWeight.Bold)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) { listOf("Easy", "Good", "Hard").forEach { AssistChip(onClick = {}, label = { Text(it) }) } }
     InfoBox("Nice work. Your next scheduled session remains in its original slot.")
-    WideButton("Back to today") { dispatch(AppIntent.ExitPlayer) }
+    WideButton("Back to today") {
+        if (interstitialEligible(state)) adsHost.showSummaryInterstitial(state, { dispatch(AppIntent.RecordInterstitialShown(kotlin.time.Clock.System.now().toEpochMilliseconds())) }, { dispatch(AppIntent.ExitPlayer) })
+        else dispatch(AppIntent.ExitPlayer)
+    }
 }
 
 @Composable
-private fun DetailFrame(title: String, subtitle: String, dispatch: (AppIntent) -> Unit, content: @Composable ColumnScope.() -> Unit) {
+internal fun DetailFrame(title: String, subtitle: String, dispatch: (AppIntent) -> Unit, content: @Composable ColumnScope.() -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         TextButton({ dispatch(AppIntent.Back) }, shape = CircleShape,
             colors = ButtonDefaults.textButtonColors(containerColor = SurfaceMuted, contentColor = TextPrimary),
