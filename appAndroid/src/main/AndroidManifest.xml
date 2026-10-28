@@ -3,7 +3,7 @@
         android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher">
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-1142910190520345~7439306546" />
+            android:value="ca-app-pub-3940256099942544~3347511713" />
         <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
