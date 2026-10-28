@@ -11,7 +11,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 
-private const val TEST_BANNER_ID = "ca-app-pub-3940256099942544/6300978111"
+private const val BANNER_AD_UNIT_ID = "ca-app-pub-1142910190520345/5869319982"
 
 @Composable
 internal actual fun QuietBannerAd() {
@@ -19,7 +19,7 @@ internal actual fun QuietBannerAd() {
         modifier = Modifier.fillMaxWidth().height(50.dp),
         factory = { context ->
             AdView(context).apply {
-                adUnitId = TEST_BANNER_ID
+                adUnitId = BANNER_AD_UNIT_ID
                 val widthDp = (context.resources.displayMetrics.widthPixels /
                     context.resources.displayMetrics.density).toInt()
                 setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp))
