@@ -6,9 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -23,7 +22,7 @@ object AndroidAdsRuntime {
 internal actual fun QuietBannerAd() {
     if (!AndroidAdsRuntime.allowed || AndroidAdsRuntime.bannerAdUnitId.isBlank()) return
     AndroidView(
-        modifier = Modifier.fillMaxWidth().height(50.dp),
+        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
         factory = { context ->
             AdView(context).apply {
                 adUnitId = AndroidAdsRuntime.bannerAdUnitId

@@ -39,7 +39,7 @@ internal fun Modifier.glassCard(radius: Dp = 24.dp): Modifier {
 
 @Composable
 internal fun FloatingWorkoutAction(onClick: () -> Unit) {
-    Box(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp)) {
+    Box(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 16.dp)) {
         PrimaryButton("Start workout  →", onClick)
     }
 }

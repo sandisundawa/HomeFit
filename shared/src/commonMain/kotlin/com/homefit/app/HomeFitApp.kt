@@ -157,7 +157,7 @@ internal fun HomeFitContent(state: AppState, dispatch: (AppIntent) -> Unit, onSt
         containerColor = PageBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            Column {
+            Column(Modifier.navigationBarsPadding()) {
                 if (state.route == AppRoute.HOME) {
                     val workout = state.program.firstOrNull { it.workout != null }?.workout ?: SeedCatalog.workouts.first()
                     FloatingWorkoutAction { dispatch(AppIntent.OpenWorkout(workout)) }
